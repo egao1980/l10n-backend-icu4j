@@ -20,29 +20,39 @@
 
   (defmethod backend-format-time ((backend icu4j-backend) value &key locale style skeleton options)
     (declare (ignore backend skeleton options))
-    ;; Approximate with date formatter SHORT for smoke; full time styles later.
-    (icu:format-date value :locale (%locale-string locale) :style (or style :short)))
+    (icu:format-time value :locale (%locale-string locale) :style (or style :short)))
 
   (defmethod backend-format-datetime ((backend icu4j-backend) value &key locale date-style time-style
                                       skeleton options)
-    (declare (ignore backend time-style skeleton options))
-    (icu:format-date value :locale (%locale-string locale) :style (or date-style :short)))
+    (declare (ignore backend skeleton options))
+    (icu:format-datetime value
+                         :locale (%locale-string locale)
+                         :date-style (or date-style :short)
+                         :time-style (or time-style :short)))
 
   (defmethod backend-format-relative-time ((backend icu4j-backend) value unit &key locale numeric options)
-    (declare (ignore backend options))
+    (declare (ignore backend))
     (icu:format-relative-time value unit
                               :locale (%locale-string locale)
                               :numeric (ecase (or numeric :auto)
                                          (:auto nil)
                                          (:always t)
                                          ((t) t)
-                                         ((nil) nil))))
+                                         ((nil) nil))
+                              :style (getf options :style :long)))
 
   (defmethod backend-format-list ((backend icu4j-backend) items &key locale type width options)
-    (declare (ignore backend width options))
-    (icu:format-list items :locale (%locale-string locale) :type (or type :and)))
+    (declare (ignore backend options))
+    (icu:format-list items
+                     :locale (%locale-string locale)
+                     :type (or type :and)
+                     :width (or width :wide)))
 
   (defmethod backend-parse-number ((backend icu4j-backend) string &key locale style options)
     (declare (ignore backend options))
     (icu:parse-number string :locale (%locale-string locale) :style style))
+
+  (defmethod backend-parse-date ((backend icu4j-backend) string &key locale style skeleton options)
+    (declare (ignore backend skeleton options))
+    (icu:parse-date string :locale (%locale-string locale) :style style))
 )

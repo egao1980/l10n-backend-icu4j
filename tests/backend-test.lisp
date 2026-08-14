@@ -62,6 +62,25 @@
   (let ((s (format-date 0 :locale "en_US" :style :short))) ; 1970-01-01 UT
     (ok (plusp (length s)))))
 
+(deftest format-time-not-date
+  (let ((s (format-time 0 :locale "en_US" :style :short)))
+    (ok (plusp (length s)))
+    ;; Must not look like a calendar date-only string (e.g. "1/1/70").
+    (ok (or (find #\: s) (search "AM" s) (search "PM" s)
+            (search "am" s) (search "pm" s) (digit-char-p (char s 0))))))
+
+(deftest format-datetime-includes-time
+  (let ((s (format-datetime 0 :locale "en_US" :date-style :short :time-style :short)))
+    (ok (plusp (length s)))
+    (ok (or (find #\: s) (search "AM" s) (search "PM" s)
+            (search "am" s) (search "pm" s)))))
+
+(deftest parse-date-roundtrip-smoke
+  (let* ((s (format-date 0 :locale "en_US" :style :short))
+         (ut (parse-date s :locale "en_US" :style :short)))
+    (ok (numberp ut))
+    (ok (< (abs ut) (* 2 24 3600d0))))) ; near epoch
+
 (deftest format-relative-time-numeric
   (let ((s (format-relative-time -1 :day :locale "en" :numeric :always)))
     (ok (or (search "day" s :test #'char-equal)
@@ -71,15 +90,23 @@
   (let ((s (format-relative-time -1 :day :locale "en" :numeric :auto)))
     (ok (plusp (length s)))))
 
+(deftest format-relative-time-short-style
+  (let ((s (format-relative-time -1 :day :locale "en" :numeric :always
+                                 :options '(:style :short))))
+    (ok (plusp (length s)))))
+
 ;;; --- list / locale case -----------------------------------------------------
 
 (deftest format-list-and-or
   (let ((and-s (format-list '("a" "b" "c") :locale "en" :type :and))
-        (or-s (format-list '("a" "b") :locale "en" :type :or)))
+        (or-s (format-list '("a" "b") :locale "en" :type :or))
+        (narrow (format-list '("a" "b" "c") :locale "en" :type :and :width :narrow)))
     (ok (search "a" and-s))
     (ok (search "c" and-s))
     (ok (search "a" or-s))
-    (ok (search "b" or-s))))
+    (ok (search "b" or-s))
+    (ok (search "a" narrow))
+    (ok (plusp (length narrow)))))
 
 (deftest locale-case-english
   (ok (string= (locale-downcase "I" :locale "en") "i"))
