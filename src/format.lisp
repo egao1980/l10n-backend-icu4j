@@ -39,6 +39,10 @@
                                          ((nil) nil))))
 
   (defmethod backend-format-list ((backend icu4j-backend) items &key locale type width options)
-    (declare (ignore backend type width options))
-    (icu:format-list items :locale (%locale-string locale)))
+    (declare (ignore backend width options))
+    (icu:format-list items :locale (%locale-string locale) :type (or type :and)))
+
+  (defmethod backend-parse-number ((backend icu4j-backend) string &key locale style options)
+    (declare (ignore backend options))
+    (icu:parse-number string :locale (%locale-string locale) :style style))
 )
