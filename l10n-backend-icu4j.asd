@@ -14,7 +14,7 @@
                (:file "case-locale"))
   :in-order-to ((test-op (test-op "l10n-backend-icu4j/tests")))
   :properties
-  (:cl-repo (:provides ("l10n-backend-icu4j"))))
+  (:cl-repo (:provides ("l10n-backend-icu4j") :ci (:sources (("rove" :ql))))))
 
 (defsystem "l10n-backend-icu4j/tests"
   :depends-on ("l10n-backend-icu4j" "rove")
